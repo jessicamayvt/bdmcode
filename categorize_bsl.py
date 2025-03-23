@@ -2,6 +2,7 @@ import sys
 import os
 from get_parquet  import *
 from multiprocessing import Pool
+import numpy as np
 
 # A function to categorize a BSL as served, underserved, or unserved (this is trickier!)
 bsl_dict = {}
@@ -130,6 +131,40 @@ def find_filtered_bsl_in_state(fips, edition, snapshot):
         print(f"Error reading file {file_path}: {e}")
         return set()
 
+def filtered_bsl_df(fips, edition, snapshot):
+    # Define valid technologies and business/residential codes
+    valid_technologies = [50, 40, 10, 71]
+    valid_res_codes = ["X", "R"]
+    
+    # Construct the file path using the FIPS code
+    file_path = f"{DATA_BASEDIR}/{edition}/{snapshot}/bdc_{str(fips).zfill(2)}_single_nbm.parquet"
+    
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        print(f"Error: Data file {file_path} not found.")
+        return pd.DataFrame()
+    
+    # Load only the necessary columns to improve performance
+    df = pd.read_parquet(
+        file_path,
+        columns=[
+                "location_id", 
+                "technology", 
+                "business_residential_code", 
+                "low_latency",
+                "max_advertised_download_speed",
+                "max_advertised_upload_speed"
+        ]
+    )
+        
+    # Filter based on conditions
+    filtered_df = df[
+        (df["technology"].isin(valid_technologies)) &  # Valid technology
+        (df["business_residential_code"].isin(valid_res_codes)) &  # Valid res_code
+        (df["low_latency"] == 1)  # Low latency check
+    ]
+        
+    return  filtered_df   
 
 technology_codes = {
     10: "Copper Wire", # included 
@@ -183,17 +218,11 @@ def df_classify_bsl(df, bsl):
 def classify_bsl_vectorized(df):
     """Vectorized classification of BSLs based on download, upload, technology, and latency."""
     conditions_served = (
-        (df['technology'].isin(valid_technologies)) &
-        (df['business_residential_code'].isin(valid_res_codes)) &
-        (df['low_latency'] == 1) &
         (df['max_advertised_download_speed'] >= 100) &
         (df['max_advertised_upload_speed'] >= 20)
     )
 
     conditions_underserved = (
-        (df['technology'].isin(valid_technologies)) &
-        (df['business_residential_code'].isin(valid_res_codes)) &
-        (df['low_latency'] == 1) &
         (df['max_advertised_download_speed'] >= 25) &
         (df['max_advertised_upload_speed'] >= 3)
     )
@@ -291,3 +320,26 @@ def categorize_bsl(bsl, edition, snapshot):
 #     index = 0
 
 #     count_unserved_bsl_in_virginia(majors, major_minor_dict)
+
+
+## Trying numpy
+
+def df_classify_bsl(df):
+    conditions = [
+        (df["technology"].isin(valid_technologies)) & 
+        (df["business_residential_code"].isin(valid_res_codes)) & 
+        (df["low_latency"] == 1) & 
+        (df['max_advertised_download_speed'] >= 100) & 
+        (df['max_advertised_upload_speed'] >= 20),
+        
+        (df["technology"].isin(valid_technologies)) & 
+        (df["business_residential_code"].isin(valid_res_codes)) & 
+        (df["low_latency"] == 1) & 
+        (df['max_advertised_download_speed'] >= 25) & 
+        (df['max_advertised_upload_speed'] >= 3)
+    ]
+    choices = ['served', 'underserved']
+    
+    # Efficient classification using numpy.select
+    df['status'] = np.select(conditions, choices, default='unserved')
+    return df

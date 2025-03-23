@@ -209,6 +209,11 @@ def prepare_parquet_files():
     
     print("Processing completed")
 
-# if __name__ == "__main__":
-#     base_input_dir = f"{base_input_dir}/{20221231}/{20230524}"
-#     prepare_parquet_files()
+def return_df(major, minor, fips_code):
+    DATA_BASEDIR = '/home/playpen/data/nbm_evolution/data/nbm/bdc_single_file'
+    columns_to_read = ["location_id", "max_advertised_download_speed", 
+                       "max_advertised_upload_speed", "technology", 
+                       "low_latency", "business_residential_code"]
+    
+    table = pyarrow_pq.read_table(f"{DATA_BASEDIR}/{major}/{minor}/bdc_{str(fips_code).zfill(2)}_single_nbm.parquet", columns = columns_to_read)
+    return table.to_pandas()
