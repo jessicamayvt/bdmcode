@@ -209,35 +209,6 @@ def prepare_parquet_files():
     
     print("Processing completed")
 
-if __name__ == "__main__":
-    base_input_dir = f"{base_input_dir}/{20221231}/{20230524}"
-    prepare_parquet_files()
-
-# # Jessica wrote this so it might be janky lol 
-# # also no safeties / error throwing implemented yet 
-# # also didn't know what filter by technologies meant
-# def load_into_dataframe(fips, major, minor):
-    
-#     # Update the input directory given input
-#     base_input_dir = f"{base_input_dir}/{major}/{minor}"
-#     # Prepare all files in directory and subdirectory 
-#     # given the major and minor release 
+# if __name__ == "__main__":
+#     base_input_dir = f"{base_input_dir}/{20221231}/{20230524}"
 #     prepare_parquet_files()
-
-#     # Look for file in the output directory, if it exists, 
-#     # read the data into a dataframe 
-#     target_filename = f"bdc_{fips}_single_nbm.parquet"
-#     file_path = os.path.join(base_output_dir, target_filename)
-#     if os.path.exists(file_path):
-#         print(f"Found file: {file_path}")
-#         try:
-#             # Load the Parquet file into a DataFrame
-#             df = pd.read_parquet(file_path)
-#             print(f"Loaded {len(df)} rows from {file_path}")
-#             return df
-#         except Exception as e:
-#             raise RuntimeError(f"Error loading Parquet file: {e}")
-#     else:
-#         # File not found
-#         print(f"No matching Parquet file found for FIPS {fips} in {base_output_dir}")
-#         return None

@@ -1,7 +1,6 @@
 import sys
 import os
-from .get_parquet  import *
-from ..jocelyn.funct_a_d import *
+from get_parquet  import *
 from multiprocessing import Pool
 
 # A function to categorize a BSL as served, underserved, or unserved (this is trickier!)
@@ -283,21 +282,12 @@ def categorize_bsl(bsl, edition, snapshot):
     df = pd.read_parquet(file_path)
     return df_classify_bsl(df, bsl)
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    majors = [20220630, 20221231, 20230630, 20231231, 20240630]
-    minors = [20240510, 20241104, 20250210, 20250201, 20250218]
-    major_minor_dict = dict(zip(majors, minors))
-    count_per_year = [0] * 5
-    index = 0
-    # List of BSLs in Virginia 
-    # for major in majors:
-    #     bsl_list = find_filtered_bsl_in_state(51, major, major_minor_dict[major])
-    #     for bsl in bsl_list:
-    #         category = categorize_bsl(bsl, major, major_minor_dict[major])
-    #         if category == "unserved":
-    #             count_per_year[index] += 1
-    #     print(f"For major release {major} and minor release {major_minor_dict[major]}, there are {count_per_year[index]} unserved BSLs")
-    #     index += 1
+#     majors = [20220630, 20221231, 20230630, 20231231, 20240630]
+#     minors = [20240510, 20241104, 20250210, 20250201, 20250218]
+#     major_minor_dict = dict(zip(majors, minors))
+#     count_per_year = [0] * 5
+#     index = 0
 
-    count_unserved_bsl_in_virginia(majors, major_minor_dict)
+#     count_unserved_bsl_in_virginia(majors, major_minor_dict)
